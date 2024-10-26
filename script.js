@@ -10,13 +10,29 @@ const data = [
   { id: 4, product: "tv-set", price: 6844 },
   { id: 3, product: "speaker", price: 7030 },
 ];
+
 let sortOrder = { id: "default", product: "default", price: "default" };
 let originalData = [...data];
 let sortedData = [...originalData];
+let selectedRow = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   renderTableBody(data);
   sortTable(data.id);
+
+  document.getElementById("saveChanges").addEventListener("click", () => {
+    if (selectedRow) {
+      const newProduct = document.getElementById("productName").value;
+      const newPrice = document.getElementById("productPrice").value;
+
+      const rowIndex = selectedRow.rowIndex - 1;
+      sortedData[rowIndex].product = newProduct;
+      sortedData[rowIndex].price = Number(newPrice);
+
+      renderTableBody(sortedData);
+      bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+    }
+  });
 });
 
 function renderTableBody(data) {
@@ -25,10 +41,20 @@ function renderTableBody(data) {
   data.forEach((item) => {
     const row = document.createElement("tr");
     row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.product}</td>
-            <td>${item.price}</td>
-        `;
+        <td>${item.id}</td>
+        <td>${item.product}</td>
+        <td>${item.price}</td>
+      `;
+
+    row.addEventListener("click", () => {
+      selectedRow = row;
+      document.getElementById("productName").value = item.product;
+      document.getElementById("productPrice").value = item.price;
+
+      const modal = new bootstrap.Modal(document.getElementById("editModal"));
+      modal.show();
+    });
+
     tbody.appendChild(row);
   });
 }
@@ -70,7 +96,3 @@ function clickEvent(headerId, column) {
 clickEvent("id-header", "id");
 clickEvent("product-header", "product");
 clickEvent("price-header", "price");
-
-document.addEventListener("DOMContentLoaded", () =>
-  renderTableBody(originalData)
-);
